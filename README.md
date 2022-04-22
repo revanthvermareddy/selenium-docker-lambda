@@ -15,7 +15,7 @@ To re-create the AWS Lambda docker image, make sure you have the following pre-r
 
 First, clone this repository
 ```
-git clone https://github.com/revanthvermareddy/docker-lambda
+git clone https://github.com/revanthvermareddy/selenium-docker-lambda
 ```
 
 Then, checkout the relevant branch like main
