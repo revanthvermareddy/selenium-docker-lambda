@@ -1,9 +1,7 @@
 ## About
----
 This is a web crawler built using selenium, firefox and geckodriver and is compatible as a docker-on-lambda. The built lambda docker image is pushed to a private AWS ECR (Elastic Container Registry) repo. Then an AWS Lambda is built using this image, the flow is deployed on my personal AWS lambda account and verified.
 
 ### Requirements
----
 To re-create the AWS Lambda docker image, make sure you have the following pre-requisites set up:
 - [git](https://git-scm.com/downloads)
 - [docker](https://docs.docker.com/get-docker/)
@@ -11,7 +9,6 @@ To re-create the AWS Lambda docker image, make sure you have the following pre-r
 - [python-3.6 or higher](https://www.python.org/downloads/)
 
 ## Usage
----
 
 First, clone this repository
 ```
@@ -78,7 +75,6 @@ Once after you've pushed the image, use the image while creating a lambda functi
 Configure the timeout and memory accordingly.
 
 ### Lambda configurations:
----
 Below are the lambda configurations taht worked out in my case and hope the same should work in your case too. But you may require to twak them if there be a need.
 ```
 timeout: 3 sec
@@ -87,10 +83,8 @@ architecure: x86_64
 ```
 
 ## Next Steps (TODO)
----
 After the local development need to automate the deployment onto AWS Lambda using aws-sam-cli
 
 ## Contributions
----
 You may customize the code based on your requirements for web crawling. And contributers are encouraged to enhance the code and raise PR's. You may reach out to me anytime at vermareddyrevanth@gmail.com in case of queries.
 
