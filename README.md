@@ -9,6 +9,9 @@ To re-create the AWS Lambda docker image, make sure you have the following pre-r
 - [aws-cli](https://awscli.amazonaws.com/AWSCLIV2.msi)
 - [python-3.6 or higher](https://www.python.org/downloads/)
 
+If u want to test the app on Host machine then download the latest geckodriver from below link and unzip it
+- [gecko driver for win or mac](https://github.com/mozilla/geckodriver/releases)
+
 ## Usage
 
 First, clone this repository
@@ -59,17 +62,17 @@ Tip: To do both build followed by bringing the service up use the below command 
 docker-compose -f webscraper/local.yml up --build
 ```
 
-In a separate terminal, you can then locally invoke the function using cURL
-```
-curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{"payload":"hello world!","url":"https://example.com/"}'
-```
-or you can import the below postman request onto postman client to test the same
+In a separate terminal, you can then locally invoke the function using cURL command or you can import the below postman request onto postman client to test the same
 ```
 curl --location --request POST 'http://localhost:9000/2015-03-31/functions/function/invocations' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-    "payload": "hello world!",
-    "url": "https://example.com/"
+    "payload": "hello world!", 
+    "url": "https://epfindia.gov.in/site_en/For_Employers.php", 
+    "browser_binary_location": "C:\\Program Files\\Mozilla Firefox\\firefox.exe", 
+    "driver_binary_location": "C:\\Users\\Administrator\\Downloads\\geckodriver-v0.31.0-win64\\geckodriver.exe", 
+    "processes_count": 3, 
+    "mode": "local"
 }'
 ```
 
