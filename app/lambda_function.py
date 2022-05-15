@@ -45,7 +45,7 @@ def lambda_handler(event=None, context=None):
         with webdriver.Firefox(options=options, service_log_path=os.path.devnull, executable_path=driver_binary_location) as driver:
             print(f"Trying to crawl url: { url }")
             driver.get(url)
-            print("Got response fron the url..")
+            print("Got response from the url..")
             element_text = driver.page_source
             print(f"Page Title: { driver.title }")
             print(f"Element text: { element_text }")

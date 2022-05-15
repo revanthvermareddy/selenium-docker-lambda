@@ -18,11 +18,8 @@ RUN yum install -y \
     dbus-glib
 
 # install geckodriver
-RUN GECKODRIVER_VERSION=`curl https://github.com/mozilla/geckodriver/releases/latest | grep -Po 'v[0-9]+.[0-9]+.[0-9]+'` && \
-    wget https://github.com/mozilla/geckodriver/releases/download/${GECKODRIVER_VERSION}/geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz && \
-    tar -zxf geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz -C /usr/local/bin && \
-    chmod +x /usr/local/bin/geckodriver && \
-    rm geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz
+COPY geckodriver-install.sh  /tmp/geckodriver-install.sh
+RUN sh /tmp/geckodriver-install.sh
 
 # install linux firefox binary
 RUN FIREFOX_SETUP=firefox-setup.tar.bz2 && \
@@ -37,13 +34,18 @@ RUN FIREFOX_SETUP=firefox-setup.tar.bz2 && \
 ##################################################################
 # -- copying the source code and installing dependencies --
 
-# install the function's dependencies using file requirements.txt from your project folder
-COPY requirements.txt  .
-
-RUN  pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
+# install the function's dependencies using file requirements.txt from the project folder
+COPY requirements.txt  /tmp/requirements.txt
+RUN python -m pip install --upgrade pip && \
+    python -m pip install -r /tmp/requirements.txt
 
 # copying source code to default "LAMBDA_TASK_ROOT=/var/task" as the work dir
 COPY app/lambda_function.py ${LAMBDA_TASK_ROOT}
+
+# Create a non-root user with an explicit UID and add permission to access the /var/task folder
+# For more info, please refer to https://code.visualstudio.com/docs/containers/troubleshooting#_running-as-a-nonroot-user
+RUN /usr/sbin/adduser -u 5678 appuser && chown -R appuser ${LAMBDA_TASK_ROOT}
+USER appuser
 
 # Set the CMD to your handler
 CMD ["lambda_function.lambda_handler"]
