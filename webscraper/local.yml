@@ -1,0 +1,17 @@
+version: '3.3'
+services:
+  webscraper:
+    restart: on-failure
+    platform: linux/amd64
+    build:
+      context: ../
+      labels:
+        com.revanth.description: "A docker container for web scraping on AWS Lambda"
+        com.revanth.author: "Revanth Vermareddy"
+        com.revanth.version: "latest"
+    image: selenium_docker:latest
+    container_name: webscraper-local
+    ports:
+      - 9000:8080
+    volumes:
+      - ../app:/var/task/

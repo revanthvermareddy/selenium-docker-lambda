@@ -5,6 +5,7 @@ This is a web crawler built using selenium, firefox and geckodriver and is compa
 To re-create the AWS Lambda docker image, make sure you have the following pre-requisites set up:
 - [git](https://git-scm.com/downloads)
 - [docker](https://docs.docker.com/get-docker/)
+- [docker-compose](https://docs.docker.com/compose/install/)
 - [aws-cli](https://awscli.amazonaws.com/AWSCLIV2.msi)
 - [python-3.6 or higher](https://www.python.org/downloads/)
 
@@ -15,8 +16,12 @@ First, clone this repository
 git clone https://github.com/revanthvermareddy/selenium-docker-lambda
 ```
 
-Then, checkout the relevant branch like main
+Next, change the directory to the project folder
+```
+cd ./selenium-docker-lambda/
+```
 
+Then, checkout to the relevant branch, for ex: main
 ```
 git checkout main
 ```
@@ -35,10 +40,23 @@ To build docker image use
 ```
 docker build --platform=linux/amd64 -t selenium_docker:latest .
 ```
+or
+```
+docker-compose -f webscraper/local.yml build
+```
 
 To run docker image locally
 ```
 docker run -p 9000:8080 -d -it selenium_docker:latest
+```
+or
+```
+docker-compose -f webscraper/local.yml up
+```
+
+Tip: To do both build followed by bringing the service up use the below command (useful when developing locally)
+```
+docker-compose -f webscraper/local.yml up --build
 ```
 
 In a separate terminal, you can then locally invoke the function using cURL
@@ -66,9 +84,9 @@ aws ecr get-login-password --region us-east-1 | docker login --username AWS --pa
 
 docker build --platform=linux/amd64 -t selenium_docker:latest .
 
-docker tag selenium_docker:latest 123456789012.dkr.ecr.us-east-1.amazonaws.com/selenium_docker:latest
+docker tag selenium_docker:latest <AWS ACCOUNT NUM>.dkr.ecr.us-east-1.amazonaws.com/selenium_docker:latest
 
-docker push 123456789012.dkr.ecr.us-east-1.amazonaws.com/selenium_docker:latest
+docker push <AWS ACCOUNT NUM>.dkr.ecr.us-east-1.amazonaws.com/selenium_docker:latest
 ```
 
 Once after you've pushed the image, use the image while creating a lambda function.
