@@ -3,6 +3,7 @@ import os
 import time
 import multiprocessing
 import logging
+import pandas as pd
 
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
@@ -47,11 +48,37 @@ def update_global_options(event):
     
     print("\n --- UPDATING GLOBAL OPTIONS : END ---\n")
 
-def scraper(name, options):
+def read_excel(path, source):
+    
+    if source == "local":
+        if not os.path.exists(path):
+            print(f"Excel path: {path} doesn't exists")
+            raise Exception("Invalid path for excel")
+
+        df = pd.read_excel(path)
+        return df
+    
+    if source == "s3":
+        '''
+        TODO: 
+        1.) Check if path S3 path exists
+        2.) Download the excel file from S3://$S3_BUCKET/data/$Employeer/employee_details.xlsx to /tmp/$Employeer/employee_details.xlsx
+        3.) Check if local path exists
+        '''
+        if not os.path.exists(path):
+            print(f"Excel path: {path} doesn't exists")
+            raise Exception("Invalid path for excel")
+
+def scraper(name, options, data):
+    # -- get options --
     url = options["url"]
     browser_binary_location = options["browser_binary_location"]
     driver_binary_location = options["driver_binary_location"]
     mode = options["mode"]
+
+    # -- get data --
+    employer = data["employer"]
+    employee = data["employee"]
 
     try:
         logging.info(f" -- Starting process: {name} --")
@@ -76,7 +103,28 @@ def scraper(name, options):
         with webdriver.Firefox(options=options, service_log_path=os.path.devnull, executable_path=driver_binary_location) as driver:
             logging.info(f"Trying to crawl url: { url }")
             driver.get(url)
-            # elem = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "waitCreate")))
+
+            # -- login form filling: START --
+            '''
+            Note: default login is Organization login 
+            and if we wnated to go with employer's login then we need to click the 'Employer Sign In' link
+            check if employer login is needed or organization login is needed
+            '''
+            if employer["type"] != "organization":
+                employer_link = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.LINK_TEXT, "Employer Sign In")))
+                employer_link.click()
+                time.sleep(3)
+
+            uname = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "username" if employer["type"] == "organization" else "ownerUsername")))
+            uname.send_keys(employer["username"])
+
+            pswd = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "password" if employer["type"] == "organization" else "ownerPassword")))
+            pswd.send_keys(employer["password"])
+
+            submit = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".form-signin button")))
+            submit.click()
+            # -- login form filling: END --
+
             time.sleep(10)
             logging.info("Got response from the url..")
             element_text = driver.page_source
@@ -102,12 +150,28 @@ def lambda_handler(event=None, context=None):
     # -- update global variables from event object if available --
     update_global_options(event)
 
+    # -- load the dataframe --
+    # emp_details_df = read_excel(r'./data/xyz/employee_details.xlsx', "local")
+    # print(f"Dataframe: \n{emp_details_df}\n")
+    
+    data ={
+        "employer": {
+            "username": "xyz",
+            "password": "12345678",
+            "type": "organization"
+        },
+        "employee": {
+            "name": "revanth",
+            "age": "25"
+        }
+    }
+
     start = time.perf_counter()
 
     # -- create individual processes based on the processes_count --
     processes = []
     for pid in range(options["processes_count"]):
-        pr = multiprocessing.Process(target=scraper, args=(str(pid+1), options))
+        pr = multiprocessing.Process(target=scraper, args=(str(pid+1), options, data))
         processes.append(pr)
     
     # -- start each process --
@@ -131,13 +195,14 @@ if __name__ == "__main__":
 
     # -- url to scrape --
     url = "https://example.com/"
+    url = "https://unifiedportal-emp.epfindia.gov.in/epfo/"
 
     local_event = {
         "payload": "hello world!",
         "url": url,
         "browser_binary_location": browser_binary_location,
         "driver_binary_location": driver_binary_location,
-        "processes_count": 3,
+        "processes_count": 2,
         "mode": "local"
     }
     
